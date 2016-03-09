@@ -13,8 +13,8 @@ It was updated by Mike Rhyner (v0.2) in 2004 to add handling for certificate
 renewals.
 
 Release v0.3 is the result of several years of changes by Eric Dey in order to
-improve error handling, update the encryption strength, add handling for
-Subject Alternate Names add wildcard certificates.
+improve error handling, update the encryption strength, and add handling for
+Subject Alternate Names and wildcard certificates.
 
 
 ## Getting Started
@@ -46,7 +46,7 @@ certificates are created with 2 year expiration dates.
 
 This creates the self-signed root certificate for your new CA. This certificate
 will be used to sign all other certificates and must be trusted by the clients
-of the servers that use the certificates signed by your CA.
+of those servers.
 
 ```
 $ ./new-root-ca.sh
@@ -168,6 +168,12 @@ domain name. These are the DNS names that will match the final certificate:
 * *.example.com
 * example.com
 
+Note that, unlike DNS resolution, SSL/TLS clients will only use one level of
+matching for wildcard names. For example, an SSL certificate for
+`*.example.com` will validate `dev.example.com` and `staging.example.com` but
+will reject `alpha.dev.example.com`. This is by design of the SSL validation
+and there is no _fix_ for it.
+
 ```
 $ ./new-server-cert.sh example.com '*.example.com'
 No example.com.key found. Generating one
@@ -210,15 +216,18 @@ Common Name (eg, www.domain.com) [wildcard.example.com]:*.example.com
 ## Installation
 
 While there are more complete guides on the Internet for installing SSL
-certificates, these my are my notes on a few common ones. Please note that,
+certificates, these my are my notes on a few common services. Please note that,
 while I have not included any guidance for configuring the cipher suites and
 protocols, these are crucial items that you must understand when configuring
 any secure service on the Internet.
 
+Some of these these examples assume that you have put the server certificate
+and private key files into the standard locations for Debian/Ubuntu.
+
 
 ### Debian/Ubuntu Certificate Storage
 
-On Debian/Ubuntu, the trusted root CAs are installed into the `/etc/ssl/certs/`
+On Debian/Ubuntu, the trusted root CAs are installed into the `/etc/ssl/certs`
 directory. Copy your `ca.crt` file into this directory and give it a better
 name and `pem` extension. For example: `My_Personal_Root_CA.pem`
 
@@ -227,7 +236,7 @@ of the symbolic links in that directory.  Then, run the
 `update-ca-certificates` command to remake the `ca-certificates.crt` single
 bundle file.
 
-Private keys are normally installed into the `/etc/ssl/private/`
+Private keys are normally installed into the `/etc/ssl/private`
 directory. Since your CA key will not be used by system services, you do not
 need to copy it there. However, it will be convenient to copy your server keys
 there, especially if multiple services share a key.
@@ -251,9 +260,9 @@ certificate be combined together into one PEM file. These commands will give
 you the correct ordering within the file:
 
 ```
-cat www.example.com.key >> www.example.com.pem
-openssl x509 -in www.example.com.crt >> www.example.com.pem
-cat ca.crt >> www.example.com.pem
+$ cat www.example.com.key > www.example.com.pem
+$ openssl x509 -in www.example.com.crt >> www.example.com.pem
+$ cat ca.crt >> www.example.com.pem
 ```
 
 The combined PEM file is now referenced from `pound.cfg` as follows:
@@ -268,9 +277,6 @@ ListenHTTPS
 
 ### Postfix MTA
 
-These instructions assume that you have put the server certificate and private
-key files into the standard locations for Debian/Ubuntu.
-
 ```
 smtp_tls_CApath= /etc/ssl/certs
 smtp_tls_cert_file = /etc/ssl/certs/mail.example.com.crt
@@ -284,9 +290,6 @@ smtpd_tls_key_file = /etc/ssl/private/mail.example.com.key
 
 ### Dovecot IMAP
 
-These instructions assume that you have put the server certificate and private
-key files into the standard locations for Debian/Ubuntu.
-
 ```
 ssl_ca = /etc/ssl/certs/My_Personal_Root_CA.pem
 ssl_cert = </etc/ssl/certs/mail.example.com.crt
@@ -299,8 +302,8 @@ ssl_key = </etc/ssl/private/mail.example.com.key
 
 These commands show how to view and validate an SSL certificate from a client's
 point of view. These assume that that your operating system's trusted root CAs
-are in the `/etc/ssl/certs' directory. See the previous instructions for
-instructions for rehashing and managing this for Debian/Ubuntu systems.
+are in the `/etc/ssl/certs` directory. See the previous instructions for the
+steps to rehash and manage this directory on Debian/Ubuntu systems.
 
 HTTPS web server:
 ```
