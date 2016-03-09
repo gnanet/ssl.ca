@@ -1,132 +1,65 @@
-##
-##  README - What is this all about...
-##  Copyright (c) 2000 Yeak Nai Siew, All Rights Reserved. 
-##
+# SSL/TLS Certificate Authority Package
 
-##############################################################################
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+This package is a set of scripts designed to handle the tasks of an SSL
+certificate authority. While you could do this using only the OpenSSL command
+line utility, this package encapsulates the operational knowledge of doing this
+and provides a repeatable process that is suitable for the PKI foundation of a
+small organization.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This package was originally developed Yeak Nai Siew (v0.1).
+> Copyright (c) 2000 Yeak Nai Siew, All Rights Reserved.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+It was updated by Mike Rhyner (v0.2) in 2004 to add handling for certificate
+renewals.
 
-##############################################################################
-
-CHANGES
--------
-v0.1	24 Apr 2000, Initial public release.
-v0.2	22 Mar 2004, added handling for certificate renewal
-v0.3    08 Mar 2016, see CHANGELOG
-
-This README file will explain how to use this handy "kit" to get your
-certificate creation and signing task easier using openssl. You can also
-modify the scripts to suit your needs.
-
-This scripts are particularly designed to handle the web server cert
-generation and user cert generation (S/MIME). Then the script let you
-package the certs into pkcs12 format for you to download to your Netscape
-Communicator to use.
-
-Most of the codes are borrowed from RSE's Mod-SSL package. I only "extend"
-it and probably make it easier to use.
+Release v0.3 is the result of several years of changes by Eric Dey in order to
+improve error handling, update the encryption strength, add handling for
+Subject Alternate Names add wildcard certificates.
 
 
-Introduction
-------------
+## Getting Started
 
-It took me 2 full days to be able to come out this kit, and months of
-past experience to understand OpenSSL's operation. I hope this kit can help
-anyone to get things work, up and run immediately. If this helped you,
-please let me know. If this does not help you, let me know so that I can
-improve it.
+While this package is only tested and used on Linux, it was originally
+developed for Solaris and will likely work on generic Unix systems. You must
+have the OpenSSL command line utility installed and in your PATH. For
+Debian/Ubuntu and RHEL/CentOS derived systems, this is included in the
+`openssl` package.
 
-I use this kit to generate certificates for school and friends to use. It
-happend that recently I only have one Solaris 8 and need to setup
-a secured web-based authentication that used certificate + conventional
-login process. So, the best I can do now is this:
+The steps to get started are:
+1. Create a root certificate
+2. Create a server certificate
+3. Sign the server certificate
 
-1. Use Apache as core Web Server
-2. Use OpenSSL as core SSL encryption
-3. Use Mod-SSL to glue Apache and OpenSSL
-4. Use PHP3 with LDAP capability to do my programming task
-5. Use Netscape Directory Server 4.11 for backend database purpose (can be
-   PostgreSQL or MySQL)
+After the root certificate has been created, only steps #2 and #3 are performed
+for normal operations. 
 
-I won't go into the details of compiling Apache, OpenSSL, Mod-SSL, PHP3
-and LDAPSDK things... the documentation from Apache and Mod-SSL is
-particularly useful. Great job has been done by RSE many months ago!
+The root certificate is created with a 10 year expiration date and does not
+need to be remade unless its private key is compromised. Server and user
+certificates are created with 2 year expiration dates.
 
 
-Requirement to run this program
--------------------------------
 
-1. Unix system that can run "sh". I prefer Linux. But I write this on
-   Solaris 8 due to work requirement. Yes, it runs on Linux.
-
-2. Working openssl 0.9.4 or above. I am using 0.95a. Yes, it runs on Linux.
-
-To test the certification, you need,
-
-1. Web Server that use the server certificate
-
-2. Netscape Communicator 4.5 and above that use the S/MIME certificate.
-   I have tested IE5 on Windows 2000. Also the Outlook Express. Work.
+## Examples
 
 
-How to use it
--------------
+### Create a new Root CA certificate
 
-The script is written based on this concept:
+This creates the self-signed root certificate for your new CA. This certificate
+will be used to sign all other certificates and must be trusted by the clients
+of the servers that use the certificates signed by your CA.
 
-1. You have one self-signed Root Certificate (Root CA) that is used to
-   sign everything that you are going to generate.
-2. You can generate the web server cert for Apache+Mod-SSL to use.
-3. You can generate S/MIME key for your Netscape browser to use.
-
-To start, you must create a self-signed Root Certification Authority.
-This is done by running "new-root-ca.sh". Remember the password of this
-key.
-
-You run "new-server-cert.sh" to create a web server's private and
-public key. The script will continue on to enter the ceritificate information.
-We call this "certificate signing request (csr)". The format is x509. You
-need to run "sign-server-cert.sh" to approve and sign with your root key.
-
-You run "new-user-cert.sh" to create a user certificate. You can use this
-to sign and encrypt your email using MS Outlook Express or Netscape browser.
-You need to run "sign-user-cert.sh" to sign it. Finally,  you run "p12.sh"
-to package the private key, signed key, together with CA's Public key into
-a file with ".p12" extension. You can download this to your PC and import in.
-
-I hope the explaination is very straight forward.
-
-Example Usage
--------------
-
-
-1. Create the self-signed Root CA key
-
-
-# ./new-root-ca.sh 
-No Root CA key round. Generating one
-Generating RSA private key, 1024 bit long modulus
-....++++++
-.............++++++
+```
+$ ./new-root-ca.sh
+No Root CA key found. Generating one
+Generating RSA private key, 2048 bit long modulus
+......+++
+.....+++
 e is 65537 (0x10001)
-Enter PEM pass phrase:
-Verifying password - Enter PEM pass phrase:
+Enter pass phrase for ca.key:
+Verifying - Enter pass phrase for ca.key:
 
 Self-sign the root CA...
-Using configuration from root-ca.conf
-Enter PEM pass phrase:
+Enter pass phrase for ca.key:
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
 What you are about to enter is what is called a Distinguished Name or a DN.
@@ -134,30 +67,39 @@ There are quite a few fields but you can leave some blank
 For some fields there will be a default value,
 If you enter '.', the field will be left blank.
 -----
-Country Name (2 letter code) [MY]:
-State or Province Name (full name) [Perak]:
-Locality Name (eg, city) [Sitiawan]:
-Organization Name (eg, company) [My Directory Sdn Bhd]:
+Country Name (2 letter code) [US]:
+State or Province Name (full name) [Texas]:
+Locality Name (eg, city) [Austin]:
+Organization Name (eg, company) [My Personal Certificate Authority]:
 Organizational Unit Name (eg, section) [Certification Services Division]:
-Common Name (eg, MD Root CA) []:MD Root CA
-Email Address []:md-ca@md.com.my
+Common Name (eg, MD Root CA) []:My Root CA
+Email Address []:pki@my.root.ca.com
+```
+
+This process creates these two files:
+* ca.crt -- _distribute to clients and add to trusted CA databases_
+* ca.key -- _keep private and never disclose this file_
 
 
 
-2. Create the server cert
+### Create and sign a new server certificate
 
+This example creates a server certificate with two Subject Alternate
+Names. This web server would presumably respond to these DNS host names:
 
-# ./new-server-cert.sh 
-Usage: ./new-server-cert.sh <www.domain.com>
-# ./new-server-cert.sh www.md.com.my
-No www.md.com.my.key round. Generating one
-Generating RSA private key, 1024 bit long modulus
-...++++++
-......++++++
+* www.example.com
+* example.com
+* staging.example.com
+
+```
+$ ./new-server-cert.sh www.example.com example.com staging.example.com
+No www.example.com.key found. Generating one
+Generating RSA private key, 2048 bit long modulus
+.......................................+++
+...................................................................+++
 e is 65537 (0x10001)
 
 Fill in certificate data
-Using configuration from server-cert.conf
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
 What you are about to enter is what is called a Distinguished Name or a DN.
@@ -165,63 +107,76 @@ There are quite a few fields but you can leave some blank
 For some fields there will be a default value,
 If you enter '.', the field will be left blank.
 -----
-Country Name (2 letter code) [MY]:
-State or Province Name (full name) [Perak]:    
-Locality Name (eg, city) [Sitiawan]:
-Organization Name (eg, company) [My Directory Sdn Bhd]:
-Organizational Unit Name (eg, section) [Secure Web Server]:
-Common Name (eg, www.domain.com) []:www.md.com.my
-Email Address []:info@md.com.my
+Country Name (2 letter code) [US]:
+State or Province Name (full name) [Texas]:
+Locality Name (eg, city) [Austin]:
+Organization Name (eg, company) [My Personal Organization]:
+Organizational Unit Name (eg, section) [Secure Server]:
+Common Name (eg, www.domain.com) [www.example.com]:
+Email Address []:
 
 You may now run ./sign-server-cert.sh to get it signed
+```
+
+This process creates these two files:
+* www.example.com.csr -- _certificate signing request for the CA_
+* www.example.com.key -- _private encryption key only the web server knows_
 
 
+The CSR is the file that carries the information that the CA needs in order to
+create the certificate (CRT) file that is delivered to the server's clients.
 
-3. Sign the server cert
+```
+$ ./sign-server-cert.sh www.example.com
+Found subject alternate names: DNS:www.example.com, DNS:example.com,
+DNS:staging.example.com
 
-
-# ./sign-server-cert.sh 
-Usage: ./sign-server-cert.sh <www.domain.com>
-# ./sign-server-cert.sh www.md.com.my
-CA signing: www.md.com.my.csr -> www.md.com.my.crt:
+CA signing: www.example.com.csr -> www.example.com.crt:
 Using configuration from ca.config
-Enter PEM pass phrase:
+Enter pass phrase for ./ca.key:
 Check that the request matches the signature
 Signature ok
-The Subjects Distinguished Name is as follows
-countryName           :PRINTABLE:'MY'
-stateOrProvinceName   :PRINTABLE:'Perak'
-localityName          :PRINTABLE:'Sitiawan'
-organizationName      :PRINTABLE:'My Directory Sdn Bhd'
-organizationalUnitName:PRINTABLE:'Secure Web Server'
-commonName            :PRINTABLE:'www.md.com.my'
-emailAddress          :IA5STRING:'info@md.com.my'
-Certificate is to be certified until Apr 24 12:43:27 2001 GMT (365 days)
+The Subject's Distinguished Name is as follows
+countryName           :PRINTABLE:'US'
+stateOrProvinceName   :PRINTABLE:'Texas'
+localityName          :PRINTABLE:'Austin'
+organizationName      :PRINTABLE:'My Personal Organization'
+organizationalUnitName:PRINTABLE:'Secure Server'
+commonName            :PRINTABLE:'www.example.com'
+Certificate is to be certified until Mar  9 19:45:30 2018 GMT (730 days)
 Sign the certificate? [y/n]:y
 
 
 1 out of 1 certificate requests certified, commit? [y/n]y
 Write out database with 1 new entries
 Data Base Updated
-CA verifying: www.md.com.my.crt <-> CA cert
-www.md.com.my.crt: OK
+
+CA verifying: www.example.com.crt <-> CA cert
+www.example.com.crt: OK
+```
+
+This process creates one new file:
+* www.example.com.crt -- _signed certificate given to clients by the server_
 
 
 
-4. Create the user cert
+### Create a wildcard certificate
 
+This example creates a wildcard certificate with a SAN that matches the base
+domain name. These are the DNS names that will match the final certificate:
 
-# ./new-user-cert.sh 
-Usage: ./new-user-cert.sh user@email.address.com
-# ./new-user-cert.sh yeak@md.com.my
-No yeak@md.com.my.key round. Generating one
-Generating RSA private key, 1024 bit long modulus
-....................++++++
-............++++++
+* *.example.com
+* example.com
+
+```
+$ ./new-server-cert.sh example.com '*.example.com'
+No example.com.key found. Generating one
+Generating RSA private key, 2048 bit long modulus
+..................+++
+.............................................................+++
 e is 65537 (0x10001)
 
 Fill in certificate data
-Using configuration from user-cert.conf
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
 What you are about to enter is what is called a Distinguished Name or a DN.
@@ -229,110 +184,138 @@ There are quite a few fields but you can leave some blank
 For some fields there will be a default value,
 If you enter '.', the field will be left blank.
 -----
-Common Name (eg, John Doe) []:Yeak Nai Siew    
-Email Address []:yeak@md.com.my
+Country Name (2 letter code) [US]:
+State or Province Name (full name) [Texas]:
+Locality Name (eg, city) [Austin]:
+Organization Name (eg, company) [My Personal Organization]:
+Organizational Unit Name (eg, section) [Secure Server]:
+Common Name (eg, www.domain.com) [example.com]:
+Email Address []:
 
-You may now run ./sign-user-cert.sh to get it signed
+You may now run ./sign-server-cert.sh to get it signed
+```
 
+If you do not wish to include the base domain name as a Subject Alternate Name
+and you only want the CN to be the wildcard name, run the create command as
+shown and, when prompted for the CN, enter `*.example.com` as shown:
 
-
-5. Sign the user cert
-
-
-# ./sign-user-cert.sh     
-Usage: ./sign-user-cert.sh user@email.address.com
-# ./sign-user-cert.sh yeak@md.com.my
-CA signing: yeak@md.com.my.csr -> yeak@md.com.my.crt:
-Using configuration from ca.config
-Enter PEM pass phrase:
-Check that the request matches the signature
-Signature ok
-The Subjects Distinguished Name is as follows
-commonName            :PRINTABLE:'Yeak Nai Siew'
-emailAddress          :IA5STRING:'yeak@md.com.my'
-Certificate is to be certified until Apr 24 12:53:58 2001 GMT (365 days)
-Sign the certificate? [y/n]:y
+```
+$ ./new-server-cert.sh wildcard.example.com
+...
+Common Name (eg, www.domain.com) [wildcard.example.com]:*.example.com
+...
+```
 
 
-1 out of 1 certificate requests certified, commit? [y/n]y
-Write out database with 1 new entries
-Data Base Updated
-CA verifying: yeak@md.com.my.crt <-> CA cert
-yeak@md.com.my.crt: OK
+## Installation
+
+While there are more complete guides on the Internet for installing SSL
+certificates, these my are my notes on a few common ones. Please note that,
+while I have not included any guidance for configuring the cipher suites and
+protocols, these are crucial items that you must understand when configuring
+any secure service on the Internet.
+
+
+### Debian/Ubuntu Certificate Storage
+
+On Debian/Ubuntu, the trusted root CAs are installed into the `/etc/ssl/certs/`
+directory. Copy your `ca.crt` file into this directory and give it a better
+name and `pem` extension. For example: `My_Personal_Root_CA.pem`
+
+After doing this, run the OpenSSL command `c_rehash` in order to recreate all
+of the symbolic links in that directory.  Then, run the
+`update-ca-certificates` command to remake the `ca-certificates.crt` single
+bundle file.
+
+Private keys are normally installed into the `/etc/ssl/private/`
+directory. Since your CA key will not be used by system services, you do not
+need to copy it there. However, it will be convenient to copy your server keys
+there, especially if multiple services share a key.
+
+
+### nginx Web Server
+
+Create the server's private key and certificate and include them in the web
+server configuration as follows:
+
+```nginx
+ssl_certificate /etc/ssl/certs/www.example.com.crt;
+ssl_certificate_key /etc/ssl/private/www.example.com.key;
+```
+
+
+### Pound Proxy
+
+The pound proxy requires that the server's key and certificate plus the CA's
+certificate be combined together into one PEM file. These commands will give
+you the correct ordering within the file:
+
+```
+cat www.example.com.key >> www.example.com.pem
+openssl x509 -in www.example.com.crt >> www.example.com.pem
+cat ca.crt >> www.example.com.pem
+```
+
+The combined PEM file is now referenced from `pound.cfg` as follows:
+
+```
+ListenHTTPS
+    Address 0.0.0.0
+    Port    443
+    Cert    "/etc/pound/www.example.com.pem"
+```
+
+
+### Postfix MTA
+
+These instructions assume that you have put the server certificate and private
+key files into the standard locations for Debian/Ubuntu.
+
+```
+smtp_tls_CApath= /etc/ssl/certs
+smtp_tls_cert_file = /etc/ssl/certs/mail.example.com.crt
+smtp_tls_key_file = /etc/ssl/private/mail.example.com.key
+#
+smtpd_tls_CApath= /etc/ssl/certs
+smtpd_tls_cert_file = /etc/ssl/certs/mail.example.com.crt
+smtpd_tls_key_file = /etc/ssl/private/mail.example.com.key
+```
+
+
+### Dovecot IMAP
+
+These instructions assume that you have put the server certificate and private
+key files into the standard locations for Debian/Ubuntu.
+
+```
+ssl_ca = /etc/ssl/certs/My_Personal_Root_CA.pem
+ssl_cert = </etc/ssl/certs/mail.example.com.crt
+ssl_key = </etc/ssl/private/mail.example.com.key
+```
 
 
 
+## Validation with OpenSSL
 
-6. Package the user certificate into a single pkcs12 file.
+These commands show how to view and validate an SSL certificate from a client's
+point of view. These assume that that your operating system's trusted root CAs
+are in the `/etc/ssl/certs' directory. See the previous instructions for
+instructions for rehashing and managing this for Debian/Ubuntu systems.
 
+HTTPS web server:
+```
+openssl s_client -CApath /etc/ssl/certs -connect www.example.com:443 \
+   </dev/null | openssl x509 -text -noout
+```
 
+SMTP mail server w/TLS:
+```
+openssl s_client -CApath /etc/ssl/certs -connect mail.example.com:25 \
+   -starttls smtp  </dev/null | openssl x509 -text -noout
+```
 
-# ./p12.sh 
-Usage: ./p12.sh user@email.address.com
-# ./p12.sh yeak@md.com.my
-Enter Export Password:
-Verifying password - Enter Export Password:
-
-The certificate for yeak@md.com.my has been collected into a pkcs12 file.
-You can download to your browser and import it.
-
-
-
-7. DONE!
-
-
-
-PROBLEM SOLVING
----------------
-I am sure you have problem to even using the script. Yes, I actually need
-to improve them first. But see the following first (I know, I know...)
-
-Q. "openssl" not found?
-
-A. You need to have openssl 0.9.4 in your machine. For Red Hat Linux, just
-   install the openssl-xxxx.rpm package. On Solaris, make sure your PATH
-   environment is set correctly. In my case, I have openssl installed in
-   /usr/local/ssl/bin/openssl. So I need to make sure my PATH contain
-   "/usr/local/ssl/bin" and export the this PATH variable.
-
-Q. warning, not much extra random data, consider using the -rand option
-   14044:error:20.......................... PRNG not seeded:md_rand.c
-
-A. In openssl 0.9.5a version, the random seed (PRNG) is important in order to
-   generate any private key. This is a security feature, not a bug. In
-   my kit, I actually include the random-bits that I make up. Do not simply
-   use it! You should try to modify the "new-root-ca.sh" file, look for
-   "-rand random-bits", change it to "-rand /var/adm/wtmpx:/var/adm/messages"
-   in order to get your own unique seed. Note, once you successfully make
-   the openssl run, it will create a $HOME/.rnd file for future use.
-
-   In Linux, you can use "-rand /dev/urandom". If you use
-   "-rand /dev/random", be sure to patiently wait until it start to generate
-   something... :-)
-
-Q. where should I install ssl.ca directory?
-
-A. You can put anywhere. I put inside /usr/local/apache/conf where I have
-   ssl.key, ssl.crt, ssl.csr... around.
-
-Q. I can't important the p12 files to my Mac or PC!
-
-A. Make sure the file is downloaded as "binary". Windows NT 4 might have
-   problem to read the key. Try Windows 2000 or Windows 98.
-
-
-TODO
-----
-Web based certificate management. Need a lot of input from all of you out
-there.
-
-
-CONTACT
--------
-This is my signature (my vcard!)
-
-Yeak Nai Siew      [NIC:NY628] << Mac OS Forever >> << Linux Forever>>
-(yeak@md.com.my | yeak@mac.com)                  http://www.md.com.my/
-e-certificate      http://www.brainbench.com/transcript.jsp?pid=120196
-ICQ#: 13391181                                Chief Technology Officer
-
+IMAP server w/TLS:
+```
+openssl s_client -CApath /etc/ssl/certs -connect mail.example.com:143 \
+   -starttls imap  </dev/null | openssl x509 -text -noout
+```
