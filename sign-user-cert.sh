@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 ##
 ##  sign-user-cert.sh - sign using our root CA the user cert
 ##  Copyright (c) 2000 Yeak Nai Siew, All Rights Reserved. 
 ##
+
+HASHALGO="sha256"
 
 CERT=$1
 if [ $# -ne 1 ]; then
@@ -10,7 +12,7 @@ if [ $# -ne 1 ]; then
         exit 1
 fi
 if [ ! -f $CERT.csr ]; then
-        echo "No $CERT.csr round. You must create that first."
+        echo "No $CERT.csr found. You must create that first."
 	exit 1
 fi
 # Check for root CA key
@@ -42,12 +44,12 @@ certs                   = \$dir
 new_certs_dir           = \$dir/ca.db.certs
 database                = \$dir/ca.db.index
 serial                  = \$dir/ca.db.serial
-RANDFILE                = \$dir/random-bits
+RANDFILE                = /dev/urandom
 certificate             = \$dir/ca.crt
 private_key             = \$dir/ca.key
-default_days            = 365
+default_days            = 730
 default_crl_days        = 30
-default_md              = md5
+default_md              = $HASHALGO
 preserve                = yes
 x509_extensions		= user_cert
 policy                  = policy_anything
@@ -77,4 +79,3 @@ openssl verify -CAfile ca.crt $CERT.crt
 rm -f ca.config
 rm -f ca.db.serial.old
 rm -f ca.db.index.old
-

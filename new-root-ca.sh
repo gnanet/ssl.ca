@@ -1,13 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 ##
 ##  new-root-ca.sh - create the root CA
 ##  Copyright (c) 2000 Yeak Nai Siew, All Rights Reserved. 
 ##
 
+KEYBITS=2048
+HASHALGO="sha256"
+
 # Create the master CA key. This should be done once.
 if [ ! -f ca.key ]; then
-	echo "No Root CA key round. Generating one"
-	openssl genrsa -des3 -out ca.key 1024 -rand random-bits
+	echo "No Root CA key found. Generating one"
+	openssl genrsa -aes256 -out ca.key $KEYBITS -rand /dev/urandom
 	echo ""
 fi
 
@@ -15,23 +18,24 @@ fi
 CONFIG="root-ca.conf"
 cat >$CONFIG <<EOT
 [ req ]
-default_bits			= 1024
+default_bits			= $KEYBITS
 default_keyfile			= ca.key
+default_md              = $HASHALGO
 distinguished_name		= req_distinguished_name
 x509_extensions			= v3_ca
 string_mask			= nombstr
 req_extensions			= v3_req
 [ req_distinguished_name ]
 countryName			= Country Name (2 letter code)
-countryName_default		= MY
+countryName_default		= US
 countryName_min			= 2
 countryName_max			= 2
 stateOrProvinceName		= State or Province Name (full name)
-stateOrProvinceName_default	= Perak
+stateOrProvinceName_default	= Texas
 localityName			= Locality Name (eg, city)
-localityName_default		= Sitiawan
+localityName_default		= Austin
 0.organizationName		= Organization Name (eg, company)
-0.organizationName_default	= My Directory Sdn Bhd
+0.organizationName_default	= My Personal Certificate Authority
 organizationalUnitName		= Organizational Unit Name (eg, section)
 organizationalUnitName_default	= Certification Services Division
 commonName			= Common Name (eg, MD Root CA)

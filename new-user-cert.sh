@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 ##
 ##  new-user-cert.sh - create the user cert for personal use.
 ##  Copyright (c) 2000 Yeak Nai Siew, All Rights Reserved. 
 ##
+
+KEYBITS=2048
 
 # Create the key. This should be done once per cert.
 CERT=$1
@@ -20,8 +22,8 @@ if [ -f $CERT.key ]; then
 fi
 
 if [ ! -f $CERT.key ]; then
-	echo "No $CERT.key round. Generating one"
-	openssl genrsa -out $CERT.key 1024
+	echo "No $CERT.key found. Generating one"
+	openssl genrsa -out $CERT.key $KEYBITS
 	echo ""
 fi
 
@@ -29,7 +31,7 @@ fi
 CONFIG="user-cert.conf"
 cat >$CONFIG <<EOT
 [ req ]
-default_bits			= 1024
+default_bits			= $KEYBITS
 default_keyfile			= user.key
 distinguished_name		= req_distinguished_name
 string_mask			= nombstr

@@ -24,7 +24,7 @@ CHANGES
 -------
 v0.1	24 Apr 2000, Initial public release.
 v0.2	22 Mar 2004, added handling for certificate renewal
-
+v0.3    08 Mar 2016, see CHANGELOG
 
 This README file will explain how to use this handy "kit" to get your
 certificate creation and signing task easier using openssl. You can also
