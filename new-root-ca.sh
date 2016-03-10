@@ -6,6 +6,7 @@
 
 KEYBITS=2048
 HASHALGO="sha256"
+VALID_DAYS=3650
 
 # Create the master CA key. This should be done once.
 if [ ! -f ca.key ]; then
@@ -50,6 +51,6 @@ nsCertType			= objsign,email,server
 EOT
 
 echo "Self-sign the root CA..."
-openssl req -new -x509 -days 3650 -config $CONFIG -key ca.key -out ca.crt
+openssl req -new -x509 -days ${VALID_DAYS} -config $CONFIG -key ca.key -out ca.crt
 
 rm -f $CONFIG

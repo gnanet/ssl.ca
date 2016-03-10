@@ -5,6 +5,7 @@
 ##
 
 HASHALGO="sha256"
+VALID_DAYS=730
 
 CERT=$1
 if [ $# -ne 1 ]; then
@@ -47,7 +48,7 @@ serial                  = \$dir/ca.db.serial
 RANDFILE                = /dev/urandom
 certificate             = \$dir/ca.crt
 private_key             = \$dir/ca.key
-default_days            = 730
+default_days            = ${VALID_DAYS}
 default_crl_days        = 30
 default_md              = $HASHALGO
 preserve                = yes
