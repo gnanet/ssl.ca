@@ -322,3 +322,133 @@ IMAP server w/TLS:
 openssl s_client -CApath /etc/ssl/certs -connect mail.example.com:143 \
    -starttls imap  </dev/null | openssl x509 -text -noout
 ```
+
+
+
+## Customizing Your CA
+
+These are instructions for modifying this package in order to customize it for
+your particular deployment.
+
+
+### Root Certificate
+
+The root certificate is created with the `new-root-ca.sh` script. The
+certificate it creates is then used to sign all of your server and client
+certificates. These are the typical customizations that you will want to make
+within that script.
+
+Operating parameters:
+
+```
+KEYBITS=2048
+HASHALGO="sha256"
+VALID_DAYS=3650
+RANDOM_SRC=/dev/urandom
+```
+
+Defaults for the certificate contents:
+
+```
+[ req_distinguished_name ]
+countryName_default             = US
+stateOrProvinceName_default     = Texas
+localityName_default            = Austin
+0.organizationName_default      = My Personal Certificate Authority
+organizationalUnitName_default  = Certification Services Division
+```
+
+
+### Server Certificates
+
+The server certificates are created with the `new-server-cert.sh` and signed
+with the `sign-server-cert.sh` script. These are the typical customizations
+that you will want to make within those scripts.
+
+
+#### Creating
+
+These changes are made in the `new-server-cert.sh` script.
+
+Operating parameters:
+
+```
+KEYBITS=2048
+HASHALGO="sha256"
+```
+
+Defaults for the certificate contents:
+
+```
+[ req_distinguished_name ]
+countryName_default             = US
+stateOrProvinceName_default     = Texas
+localityName_default            = Austin
+0.organizationName_default      = My Personal Organization
+organizationalUnitName_default  = Secure Server
+```
+
+
+#### Signing
+
+These changes are made in the `sign-server-cert.sh` script.
+
+Operating parameters:
+
+```
+HASHALGO="sha256"
+VALID_DAYS=730
+RANDOM_SRC=/dev/urandom
+```
+
+
+### User Certificates
+
+The user certificates are created with the `new-user-cert.sh` and signed with
+the `sign-user-cert.sh` script. These are the typical customizations that you
+will want to make within those scripts.
+
+
+#### Creating
+
+These changes are made in the `new-user-cert.sh` script.
+
+Operating parameters:
+
+```
+KEYBITS=2048
+HASHALGO="sha256"
+```
+
+
+#### Signing
+
+These changes are made in the `sign-user-cert.sh` script.
+
+Operating parameters:
+
+```
+HASHALGO="sha256"
+VALID_DAYS=730
+RANDOM_SRC=/dev/urandom
+```
+
+
+
+### Entropy Source
+
+The default choice of entropy (randomness) is the /dev/urandom device and this
+is probably okay for most sites. However, for the most security with regard to
+entropy, you may consider using /dev/random for public certificate authorities.
+
+The disadvantage to using /dev/random is that it may take your system a long
+time to generate enough kernel entropy to complete the request. This can be
+especially true on virtual machines. The /dev/urandom device will continue to
+give decent entropy without blocking even after the kernel's entropy pool is
+depleted. 
+
+Earlier versions of this package (v0.1 and v0.2) used a static "random-bits"
+file as the source of entropy. If this file was updated with fresh entropy
+before every signing operation, this would be okay. However, it is more likely
+that the same entropy will be used more than once and this is not a secure
+situation.

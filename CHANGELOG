@@ -6,20 +6,15 @@ Release v0.3, 08-MAR-2016
     - Added handling for Subject Alternate Names as DNS host names and IPs.
     - Parameterized key bits; default 2048.
     - Parameterized hash algorithm; default SHA256.
+    - Parameterized certificate expiration days; default 730 for server/user
     - Use /dev/urandom for entropy instead of static "random-bits" file. (1)
     - Changed from DES3 to AES256 to encrypt Root CA key.
     - Server key usage as: nonRepudiation, digitalSignature, keyEncipherment
     - All scripts changed to use BASH.
     - Miscellaneous script clean-ups.
 
-Note 1: 
-While /dev/urandom is probably okay for most sites, you may consider using
-/dev/random for public certificate authorities. The disadvantage to using
-/dev/random is that it may take your system a long time to generate enough
-kernel entropy to complete the request. The /dev/urandom device will continue
-to give decent entropy even after the kernel's entropy pool is depleted. Either
-of these are devices most certainly preferable to using the original static
-"random-bits" file that you may forget to change between operations.
+
+Note 1: See README for a discussion about the entropy source.
 
 
 -------------------------------------------------------------------------------
