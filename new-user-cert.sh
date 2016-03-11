@@ -5,6 +5,7 @@
 ##
 
 KEYBITS=2048
+HASHALGO="sha256"
 
 # Create the key. This should be done once per cert.
 CERT=$1
@@ -33,6 +34,7 @@ cat >$CONFIG <<EOT
 [ req ]
 default_bits			= $KEYBITS
 default_keyfile			= user.key
+default_md              = $HASHALGO
 distinguished_name		= req_distinguished_name
 string_mask			= nombstr
 req_extensions			= v3_req
