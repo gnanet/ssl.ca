@@ -7,11 +7,12 @@
 KEYBITS=2048
 HASHALGO="sha256"
 VALID_DAYS=3650
+RANDOM_SRC=/dev/urandom
 
 # Create the master CA key. This should be done once.
 if [ ! -f ca.key ]; then
 	echo "No Root CA key found. Generating one"
-	openssl genrsa -aes256 -out ca.key $KEYBITS -rand /dev/urandom
+	openssl genrsa -aes256 -out ca.key $KEYBITS -rand ${RANDOM_SRC}
 	echo ""
 fi
 

@@ -6,6 +6,7 @@
 
 HASHALGO="sha256"
 VALID_DAYS=730
+RANDOM_SRC=/dev/urandom
 
 CN=$1
 if [ $# -ne 1 ]; then
@@ -46,7 +47,7 @@ certs                   = \$dir
 new_certs_dir           = \$dir/ca.db.certs
 database                = \$dir/ca.db.index
 serial                  = \$dir/ca.db.serial
-RANDFILE                = /dev/urandom
+RANDFILE                = ${RANDOM_SRC}
 certificate             = \$dir/ca.crt
 private_key             = \$dir/ca.key
 default_days            = ${VALID_DAYS}
