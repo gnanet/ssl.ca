@@ -26,6 +26,7 @@ Debian/Ubuntu and RHEL/CentOS derived systems, this is included in the
 `openssl` package.
 
 The steps to get started are:
+
 1. Create a root certificate
 2. Create a server certificate
 3. Sign the server certificate
@@ -213,7 +214,7 @@ Common Name (eg, www.domain.com) [wildcard.example.com]:*.example.com
 ```
 
 
-## Installation
+## Installing Certificates
 
 While there are more complete guides on the Internet for installing SSL
 certificates, these my are my notes on a few common services. Please note that,
@@ -305,19 +306,19 @@ point of view. These assume that that your operating system's trusted root CAs
 are in the `/etc/ssl/certs` directory. See the previous instructions for the
 steps to rehash and manage this directory on Debian/Ubuntu systems.
 
-HTTPS web server:
+*HTTPS web server:*
 ```
 openssl s_client -CApath /etc/ssl/certs -connect www.example.com:443 \
    </dev/null | openssl x509 -text -noout
 ```
 
-SMTP mail server w/TLS:
+*SMTP mail server w/TLS:*
 ```
 openssl s_client -CApath /etc/ssl/certs -connect mail.example.com:25 \
    -starttls smtp  </dev/null | openssl x509 -text -noout
 ```
 
-IMAP server w/TLS:
+*IMAP server w/TLS:*
 ```
 openssl s_client -CApath /etc/ssl/certs -connect mail.example.com:143 \
    -starttls imap  </dev/null | openssl x509 -text -noout
@@ -437,17 +438,18 @@ RANDOM_SRC=/dev/urandom
 
 ### Entropy Source
 
-The default choice of entropy (randomness) is the /dev/urandom device and this
-is probably okay for most sites. However, for the most security with regard to
-entropy, you may consider using /dev/random for public certificate authorities.
+The default choice of entropy (randomness) is the `/dev/urandom` device and
+this is probably okay for most sites. However, for the most security with
+regard to entropy, you may consider using `/dev/random` for public certificate
+authorities.
 
-The disadvantage to using /dev/random is that it may take your system a long
+The disadvantage to using `/dev/random` is that it may take your system a long
 time to generate enough kernel entropy to complete the request. This can be
-especially true on virtual machines. The /dev/urandom device will continue to
+especially true on virtual machines. The `/dev/urandom` device will continue to
 give decent entropy without blocking even after the kernel's entropy pool is
-depleted. 
+depleted.
 
-Earlier versions of this package (v0.1 and v0.2) used a static "random-bits"
+Earlier versions of this package (v0.1 and v0.2) used a static `random-bits`
 file as the source of entropy. If this file was updated with fresh entropy
 before every signing operation, this would be okay. However, it is more likely
 that the same entropy will be used more than once and this is not a secure
