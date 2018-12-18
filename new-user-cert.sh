@@ -23,29 +23,29 @@ if [ -f $CERT.key ]; then
 fi
 
 if [ ! -f $CERT.key ]; then
-	echo "No $CERT.key found. Generating one"
-	openssl genrsa -out $CERT.key $KEYBITS
-	echo ""
+    echo "No $CERT.key found. Generating one"
+    openssl genrsa -out $CERT.key $KEYBITS
+    echo ""
 fi
 
 # Fill the necessary certificate data
 CONFIG="user-cert.conf"
 cat >$CONFIG <<EOT
 [ req ]
-default_bits			= $KEYBITS
-default_keyfile			= user.key
+default_bits            = $KEYBITS
+default_keyfile            = user.key
 default_md              = $HASHALGO
-distinguished_name		= req_distinguished_name
-string_mask			= nombstr
-req_extensions			= v3_req
+distinguished_name        = req_distinguished_name
+string_mask            = nombstr
+req_extensions            = v3_req
 [ req_distinguished_name ]
-commonName			= Common Name (eg, John Doe)
-commonName_max			= 64
-emailAddress			= Email Address
-emailAddress_max		= 40
+commonName            = Common Name (eg, John Doe)
+commonName_max            = 64
+emailAddress            = Email Address
+emailAddress_max        = 40
 [ v3_req ]
-nsCertType			= client,email
-basicConstraints		= critical,CA:false
+nsCertType            = client,email
+basicConstraints        = critical,CA:false
 EOT
 
 echo "Fill in certificate data"
@@ -53,5 +53,9 @@ openssl req -new -config $CONFIG -key $CERT.key -out $CERT.csr
 
 rm -f $CONFIG
 
+# Last instruction allows copy-and-paste the prepared command
 echo ""
-echo "You may now run ./sign-user-cert.sh to get it signed"
+echo "You may now run"
+echo "./sign-user-cert.sh $CERT"
+echo "to get it signed"
+

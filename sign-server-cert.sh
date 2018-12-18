@@ -15,27 +15,20 @@ if [ $# -ne 1 ]; then
 fi
 if [ ! -f $CN.csr ]; then
     echo "No $CN.csr found. You must create that first."
-	exit 1
+    exit 1
 fi
 # Check for root CA key
 if [ ! -f ca.key -o ! -f ca.crt ]; then
-	echo "You must have root CA key generated first."
-	exit 1
+    echo "You must have root CA key generated first."
+    exit 1
 fi
-
-# Sign it with our CA key #
-
 #   make sure environment exists
-if [ ! -d ca.db.certs ]; then
-    mkdir ca.db.certs
-fi
-if [ ! -f ca.db.serial ]; then
-    echo '01' >ca.db.serial
-fi
-if [ ! -f ca.db.index ]; then
-    cp /dev/null ca.db.index
+if [ ! -d ca.db.certs -o ! -f ca.db.serial -o ! -f ca.db.index ]; then
+    echo "You must have the CA environment created first with ./new-root-ca.sh."
+    exit 1
 fi
 
+# Sign the request it with our CA key #
 
 #  create the CA requirement to sign the cert
 cat >ca.config <<EOT
@@ -54,7 +47,7 @@ default_days            = ${VALID_DAYS}
 default_crl_days        = 30
 default_md              = $HASHALGO
 preserve                = no
-x509_extensions		= server_cert
+x509_extensions        = server_cert
 policy                  = policy_anything
 [ policy_anything ]
 countryName             = optional
@@ -65,10 +58,10 @@ organizationalUnitName  = optional
 commonName              = supplied
 emailAddress            = optional
 [ server_cert ]
-#subjectKeyIdentifier	= hash
-authorityKeyIdentifier	= keyid:always
-extendedKeyUsage	= serverAuth,clientAuth,msSGC,nsSGC
-basicConstraints	= critical,CA:false
+#subjectKeyIdentifier    = hash
+authorityKeyIdentifier    = keyid:always
+extendedKeyUsage    = serverAuth,clientAuth,msSGC,nsSGC
+basicConstraints    = critical,CA:false
 [req]
 default_md              = $HASHALGO
 req_extensions          = v3_req
@@ -92,13 +85,24 @@ fi
 
 #  sign the certificate
 echo "CA signing: $CN.csr -> $CN.crt:"
-openssl ca -config ca.config -extensions v3_req -out $CN.crt -infiles $CN.csr
+openssl ca -config ca.config -extensions v3_req -notext -out $CN.crt -infiles $CN.csr
 echo ""
-echo "CA verifying: $CN.crt <-> CA cert"
-openssl verify -CAfile ca.crt $CN.crt
-echo ""
+if [ -f $CN.crt ]; then
+    echo "Creating separate human-readable certificate info -> $CN.info.txt"
+    openssl x509 -noout -text -in $CN.crt > $CN.info.txt
+    echo ""
+    echo "CA verifying: $CN.crt <-> CA cert"
+    openssl verify -CAfile ca.crt $CN.crt
+    echo ""
+else
+    echo "CA signing failed, missing the resulting $CN.crt."
+    echo "Inspect ca.config, and the *.old files"
+    exit 1
+fi
 
-#  cleanup after SSLeay 
+
+#  cleanup after success
 rm -f ca.config
 rm -f ca.db.serial.old
 rm -f ca.db.index.old
+rm -f ca.db.index.attr.old

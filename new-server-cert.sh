@@ -35,38 +35,37 @@ fi
 CONFIG="server-cert.conf"
 cat >$CONFIG <<EOT
 [ req ]
-default_bits			= $KEYBITS
-default_keyfile			= server.key
+default_bits            = $KEYBITS
+default_keyfile            = server.key
 default_md              = $HASHALGO
-distinguished_name		= req_distinguished_name
-string_mask			= nombstr
-req_extensions			= v3_req
+distinguished_name        = req_distinguished_name
+string_mask            = nombstr
+req_extensions            = v3_req
 [ req_distinguished_name ]
-countryName			= Country Name (2 letter code)
-countryName_default		= US
-countryName_min			= 2
-countryName_max			= 2
-stateOrProvinceName		= State or Province Name (full name)
-stateOrProvinceName_default	= Texas
-localityName			= Locality Name (eg, city)
-localityName_default		= Austin
-0.organizationName		= Organization Name (eg, company)
-0.organizationName_default	= My Personal Organization
-organizationalUnitName		= Organizational Unit Name (eg, section)
-organizationalUnitName_default	= Secure Server
-commonName			= Common Name (eg, www.domain.com)
+countryName            = Country Name (2 letter code)
+countryName_default        = US
+countryName_min            = 2
+countryName_max            = 2
+stateOrProvinceName        = State or Province Name (full name)
+stateOrProvinceName_default    = Texas
+localityName            = Locality Name (eg, city)
+localityName_default        = Austin
+0.organizationName        = Organization Name (eg, company)
+0.organizationName_default    = My Personal Organization
+organizationalUnitName        = Organizational Unit Name (eg, section)
+organizationalUnitName_default    = Secure Server
+commonName            = Common Name (eg, www.domain.com)
 commonName_default      = $CN
-commonName_max			= 64
-emailAddress			= Email Address
-emailAddress_max		= 40
+commonName_max            = 64
+emailAddress            = Email Address
+emailAddress_max        = 40
 [ v3_req ]
-nsCertType			= server
-basicConstraints		= critical,CA:false
-keyUsage		= nonRepudiation, digitalSignature, keyEncipherment
+nsCertType            = server
+basicConstraints        = critical,CA:false
+keyUsage        = nonRepudiation, digitalSignature, keyEncipherment
 EOT
 
-# Handle optional Subject Alternate Names
-if [ "$subjectAltNames" != "" ]; then
+# Add CN as first Subject Alternate Name (as per required starting chrome 58), and handle optional Subject Alternate Names
     echo "subjectAltName                  = @alt_names" >> $CONFIG
     echo "[alt_names]" >> $CONFIG
     numi=1
@@ -94,12 +93,14 @@ if [ "$subjectAltNames" != "" ]; then
             let numd++
         fi
     done
-fi
 
 echo "Fill in certificate data"
 openssl req -new -config $CONFIG -key $CN.key -out $CN.csr
 
 rm -f $CONFIG
 
+# Last instruction allows copy-and-paste the prepared command
 echo ""
-echo "You may now run ./sign-server-cert.sh to get it signed"
+echo "You may now run "
+echo "./sign-server-cert.sh $CN"
+echo " to get it signed"
